@@ -1,0 +1,46 @@
+﻿@using Essayin.Areas.Identity.Data
+@using Microsoft.AspNetCore.Identity
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inherits LayoutComponentBase
+@inject UserManager<EssayinUser> UserManager
+@using Sotsera.Blazor.Toaster
+
+
+<div class="sidebar">
+    <NavMenu Roles="@Roles" />
+</div>
+
+<div class="main">
+    <ToastContainer />
+    <div class="top-row px-4">
+        <LoginDisplay FirstName="@FirstName" />
+        <a href="https://docs.microsoft.com/en-us/aspnet/" target="_blank">About</a>
+    </div>
+
+    <div class="content px-4">
+        @Body
+    </div>
+</div>
+
+@code{
+
+    string Roles = "";
+    string FirstName = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity.IsAuthenticated)
+        {
+            var userinfo = await UserManager.GetUserAsync(user);
+            Roles = userinfo.Role;
+            FirstName = userinfo.FirstName;
+            Console.WriteLine(Roles);
+        }
+        else
+        {
+            Roles = "";
+        }
+    }
+}

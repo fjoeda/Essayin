@@ -1,0 +1,17 @@
+﻿
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">@Question</h5>
+            <p class="card-text">Jawaban : @Answer</p>
+        </div>
+    </div>
+
+
+
+@code {
+    [Parameter]
+    public string Question { get; set; }
+
+    [Parameter]
+    public string Answer { get; set; }
+}

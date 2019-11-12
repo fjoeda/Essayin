@@ -1,0 +1,54 @@
+﻿@page "/"
+@using Essayin.Areas.Identity.Data
+@using Microsoft.AspNetCore.Identity
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<EssayinUser> UserManager
+@using Essayin.Pages.SharedComponents
+
+<AuthorizeView>
+    <NotAuthorized>
+        <div class="jumbotron">
+            <h1 class="display-4">Essayin</h1>
+            <p class="lead">Your friendly platform for essay quiz</p>
+            <hr class="my-4">
+
+            <p class="lead">
+                <a class="btn btn-primary btn-lg" href="#" role="button">Daftar</a>
+                <a class="btn btn-primary btn-lg" href="#" role="button">Masuk</a>
+            </p>
+        </div>
+    </NotAuthorized>
+    <Authorized>
+        
+        <UserInfo Name="@FullName" Email="@Email" Role="@Roles"/>
+
+        @if (Roles.Equals("Guru"))
+        {
+            
+        }
+        else if (Roles.Equals("Siswa"))
+        {
+
+        }
+
+    </Authorized>
+</AuthorizeView>
+
+@code{
+    string Roles = "";
+    string FirstName = "";
+    string FullName = "";
+    string Email = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1500);
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var userinfo = await UserManager.GetUserAsync(user);
+        Roles = userinfo.Role;
+        FirstName = userinfo.FirstName;
+        FullName = userinfo.FirstName;
+        Email = userinfo.Email;
+    }
+}

@@ -1,0 +1,77 @@
+﻿<div class="top-row pl-4 navbar navbar-dark">
+    <a class="navbar-brand" href="">Essayin</a>
+    <button class="navbar-toggler" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <ul class="nav flex-column">
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </li>
+        <AuthorizeView>
+            <Authorized>
+                @if (Roles.Equals("Guru"))
+                {
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" href="createquiz">
+                            <span class="oi oi-plus" aria-hidden="true"></span> Buat Kuis
+                        </NavLink>
+                    </li>
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" href="fetchdata">
+                            <span class="oi oi-list-rich" aria-hidden="true"></span> Daftar Kuis
+                        </NavLink>
+                    </li>
+                }
+                else if (Roles.Equals("Siswa"))
+                {
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" href="quizcode">
+                            <span class="oi oi-plus" aria-hidden="true"></span> Kerjakan Kuis
+                        </NavLink>
+                    </li>
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" href="fetchdata">
+                            <span class="oi oi-list-rich" aria-hidden="true"></span> Histori Kuis
+                        </NavLink>
+                    </li>
+                }
+
+                
+            </Authorized>
+            <NotAuthorized>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="Identity/Account/Login">
+                        <span class="oi oi-account-login" aria-hidden="true"></span> Masuk
+                    </NavLink>
+                    <NavLink class="nav-link" href="Identity/Account/Register">
+                        <span class="oi oi-account-login" aria-hidden="true"></span> Daftar
+                    </NavLink>
+                </li>
+            </NotAuthorized>
+        </AuthorizeView>
+        
+    </ul>
+</div>
+
+@code {
+
+    [Parameter]
+    public string Roles { get; set; } 
+
+    bool collapseNavMenu = true;
+
+    string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+
+
+}

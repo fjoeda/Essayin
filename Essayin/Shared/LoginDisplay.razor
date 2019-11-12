@@ -1,0 +1,13 @@
+﻿<AuthorizeView>
+    <Authorized>
+        <a href="">Hello, @FirstName!</a>
+        <form method="post" action="Identity/Account/LogOut">
+            <button type="submit" class="nav-link btn btn-link">Log out</button>
+        </form>
+    </Authorized>
+</AuthorizeView>
+
+@code{
+    [Parameter]
+    public string FirstName { get; set; }
+}

@@ -1,0 +1,76 @@
+﻿@page "/quiz/{quizcode}"
+@attribute [Authorize]
+@using Essayin.Data
+@inject QuizService Services
+
+    <div class="text-center">
+        <h1>@KuisName</h1>
+        <hr />
+
+    </div>
+    <div class="card">
+        <div class="card-body text-center">
+            <Question Nomor="@(viewedQuestion+1)" Pertanyaan="@Pertanyan"></Question>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend" id="button-addon3">
+                    <button class="btn btn-outline-secondary" type="button" @onclick="@PrevQuestion">Sebelumnya</button>
+                </div>
+                <input class="form-control" placeholder="Jawaban" @bind="Jawaban" />
+                <div class="input-group-prepend" id="button-addon3">
+                    <button class="btn btn-outline-secondary" type="button" @onclick="@NextQuestion">Selanjutnya</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div class="text-center">
+
+</div>
+
+@code {
+    [Parameter]
+    public string QuizCode { get; set; }
+
+    List<QuestionItemModel> questions;
+    string[] answers;
+
+    //viewed text
+    string KuisName = "Nama Kuis";
+    string Pertanyan = "";
+    string Jawaban = "";
+    int viewedQuestion = 0;
+
+
+    protected override void OnInitialized()
+    {
+
+        questions = Services.GetSoalFromId(QuizCode, out KuisName);
+        answers = new string[questions.Count];
+        Pertanyan = questions[viewedQuestion].Soal;
+    }
+
+    void NextQuestion()
+    {
+        if (viewedQuestion < answers.Length-1)
+        {
+            answers[viewedQuestion] = Jawaban;
+            Jawaban = "";
+            viewedQuestion++;
+            Pertanyan = questions[viewedQuestion].Soal;
+            Jawaban = answers[viewedQuestion];
+        }
+    }
+
+    void PrevQuestion()
+    {
+        if (viewedQuestion > 0)
+        {
+            answers[viewedQuestion] = Jawaban;
+            Jawaban = "";
+            viewedQuestion--;
+            Pertanyan = questions[viewedQuestion].Soal;
+            Jawaban = answers[viewedQuestion];
+        }
+    }
+
+}

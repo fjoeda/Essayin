@@ -1,0 +1,101 @@
+﻿@page "/createquiz/"
+@using Essayin.Data
+@using Essayin.Areas.Identity.Data
+@using Microsoft.AspNetCore.Identity
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject QuizService Service
+@inject UserManager<EssayinUser> UserManager
+@inject Sotsera.Blazor.Toaster.IToaster Toaster
+
+<div class="form-group">
+    <input class="form-control" placeholder="Nama Kuis" @bind="quizname" />
+</div>
+
+@if (questions.Count > 0)
+{
+    <h3>Daftar Pertanyaan</h3>
+    <p>Jumlah pertanyaan : @questions.Count</p>
+    <ul class="list-group">
+
+        @foreach (var item in questions)
+        {
+            <li class="list-group-item">
+                <QuestionQuizItem Question="@item.Soal" Answer="@item.Jawaban" />
+                <br />
+                <button @onclick="@(()=>RemoveSoal(item))" class="btn btn-danger">Hapus</button>
+            </li>
+        }
+
+    </ul>
+
+    <br />
+    <br />
+}
+
+
+<h3>Tambah Pertanyaan</h3>
+
+<div class="form-group">
+    <input class="form-control" placeholder="Soal" @bind="question" />
+</div>
+<div class="form-group">
+    <input class="form-control" placeholder="Jawaban" @bind="answer" />
+</div>
+<div class="form-group">
+    <button class="btn btn-primary" @onclick="TambahSoal">Tambah soal</button>
+    <button class="btn btn-success" @onclick="SimpanSoal">Simpan soal</button>
+</div>
+
+
+@code {
+    private IList<QuestionItemModel> questions = new List<QuestionItemModel>();
+
+    private string quizname;
+    private string question;
+    private string answer;
+    private string quizcode = "";
+
+    private void TambahSoal()
+    {
+        questions.Add(new QuestionItemModel { Soal = question, Jawaban = answer });
+        question = "";
+        answer = "";
+    }
+
+    private void RemoveSoal(QuestionItemModel item)
+    {
+        questions.Remove(item);
+    }
+
+    private void SimpanSoal()
+    {
+        if (!quizname.Equals("") || question.Length == 0)
+        {
+            var authState = AuthenticationStateProvider.GetAuthenticationStateAsync().Result;
+            var user = authState.User;
+            var userinfo = UserManager.GetUserAsync(user).Result;
+            if (!Service.CheckIfGuruExist(userinfo.Email))
+                Service.CreateNewGuruUser(userinfo.Email, userinfo.FirstName + " " + userinfo.LastName);
+
+            quizcode = Service.GenerateQuizCode();
+
+            var quizzes = new Essayin.Data.Quiz
+            {
+                QuizId = quizcode,
+                QuizName = quizname,
+                QuizItems = questions
+            };
+            var currentList = Service.GetQuizListFromGuru(userinfo.Email);
+            currentList.Add(quizzes);
+            Service.UpdateSoalList(userinfo.Email, currentList);
+            Toaster.Success("Soal Berhasil Ditambahkan");
+            //Navigate to daftar soal URL
+        }
+        else
+        {
+
+        }
+
+    }
+
+}

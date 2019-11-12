@@ -1,0 +1,31 @@
+﻿@page "/quizcode"
+@attribute [Authorize]
+@inject NavigationManager navManager
+@using Essayin.Data
+@inject QuizService Services
+
+<div class="text-center">
+    <h2>Masukkan kode kuis</h2>
+
+    <EditForm Model="@quizModel" OnSubmit="@NavigateToUrl">
+        <InputText id="kode" @bind-Value="@quizModel.Code" />
+        <button class="btn btn-primary" type="submit" @onclick="NavigateToUrl">Submit</button>
+    </EditForm>
+    
+
+   
+</div>
+
+
+
+
+@code {
+    private QuizModel quizModel = new QuizModel();
+
+
+    void NavigateToUrl()
+    {
+
+        navManager.NavigateTo($"/quiz/{quizModel.Code}");
+    }
+}
