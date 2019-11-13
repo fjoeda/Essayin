@@ -1,5 +1,29 @@
-﻿<h3>SoalGuruList</h3>
+﻿@using Essayin.Data
+
+<hr />
+<h4>Daftar Kuis</h4>
+
+@if (QuizList.Count == 0)
+{
+    <p>Anda belum pernah membuat kuis</p>
+}
+
+@foreach (var result in QuizList)
+{
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">@result.QuizName</h5>
+            <h6 class="card-subtitle mb-2 text-muted">Kode Soal : @result.QuizId</h6>
+            <h6 class="card-subtitle mb-2 text-muted">Total Peserta : @result.QuizResults.Count</h6>
+            <button class="btn btn-primary">Sunting</button>
+            <button class="btn btn-danger">Hapus</button>
+        </div>
+    </div>
+}
+
 
 @code {
+    [Parameter]
+    public List<Quiz> QuizList { get; set; }
 
 }

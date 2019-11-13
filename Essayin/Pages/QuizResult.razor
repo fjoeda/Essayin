@@ -1,0 +1,21 @@
+﻿@page "/quizresult"
+@attribute [Authorize]
+@inject NavigationManager navManager
+@using Essayin.Data
+@inject QuizService Services
+
+<div class="card">
+    <div class="card-body text-center">
+        <h3>Nilai anda</h3>
+        <h1>100</h1>
+        <p>Anda berhasil menjawab benar sebanyak 10 dari 10 pertanyaan</p>
+        <button class="btn btn-primary" type="button" @onclick="@BackToHome">Kembali</button>
+    </div>
+</div>
+
+@code {
+    void BackToHome()
+    {
+        navManager.NavigateTo("/");
+    }
+}

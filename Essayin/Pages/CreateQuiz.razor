@@ -6,6 +6,7 @@
 @inject QuizService Service
 @inject UserManager<EssayinUser> UserManager
 @inject Sotsera.Blazor.Toaster.IToaster Toaster
+@inject NavigationManager navManager
 
 <div class="form-group">
     <input class="form-control" placeholder="Nama Kuis" @bind="quizname" />
@@ -89,11 +90,11 @@
             currentList.Add(quizzes);
             Service.UpdateSoalList(userinfo.Email, currentList);
             Toaster.Success("Soal Berhasil Ditambahkan");
-            //Navigate to daftar soal URL
+            navManager.NavigateTo("/");
         }
         else
         {
-
+            Toaster.Error("Lengkapi nama soal dan item soal");
         }
 
     }

@@ -3,6 +3,7 @@
 @inject NavigationManager navManager
 @using Essayin.Data
 @inject QuizService Services
+@inject Sotsera.Blazor.Toaster.IToaster Toaster
 
 <div class="text-center">
     <h2>Masukkan kode kuis</h2>
@@ -11,9 +12,7 @@
         <InputText id="kode" @bind-Value="@quizModel.Code" />
         <button class="btn btn-primary" type="submit" @onclick="NavigateToUrl">Submit</button>
     </EditForm>
-    
 
-   
 </div>
 
 
@@ -25,7 +24,9 @@
 
     void NavigateToUrl()
     {
-
-        navManager.NavigateTo($"/quiz/{quizModel.Code}");
+        if (Services.CheckIfSoalExist(quizModel.Code))
+            navManager.NavigateTo($"/quiz/{quizModel.Code}");
+        else
+            Toaster.Error("Soal tidak ditemukan, mohon hubungi guru terkait");
     }
 }

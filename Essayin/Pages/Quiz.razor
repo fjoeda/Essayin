@@ -2,26 +2,30 @@
 @attribute [Authorize]
 @using Essayin.Data
 @inject QuizService Services
+@inject NavigationManager navManager
 
-    <div class="text-center">
-        <h1>@KuisName</h1>
-        <hr />
 
-    </div>
-    <div class="card">
-        <div class="card-body text-center">
-            <Question Nomor="@(viewedQuestion+1)" Pertanyaan="@Pertanyan"></Question>
-            <div class="input-group mb-3">
-                <div class="input-group-prepend" id="button-addon3">
-                    <button class="btn btn-outline-secondary" type="button" @onclick="@PrevQuestion">Sebelumnya</button>
-                </div>
-                <input class="form-control" placeholder="Jawaban" @bind="Jawaban" />
-                <div class="input-group-prepend" id="button-addon3">
-                    <button class="btn btn-outline-secondary" type="button" @onclick="@NextQuestion">Selanjutnya</button>
-                </div>
+<div class="text-center">
+    <h1>@KuisName</h1>
+    <hr />
+
+</div>
+<div class="card">
+    <div class="card-body text-center">
+        <Question Nomor="@(viewedQuestion+1)" Pertanyaan="@Pertanyan"></Question>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend" id="button-addon3">
+                <button class="btn btn-outline-secondary" type="button" @onclick="@PrevQuestion">Sebelumnya</button>
+            </div>
+            <input class="form-control" placeholder="Jawaban" @bind="Jawaban" />
+            <div class="input-group-prepend" id="button-addon3">
+                <button class="btn btn-outline-secondary" type="button" @onclick="@NextQuestion">Selanjutnya</button>
             </div>
         </div>
+        <button class="btn btn-primary" type="button" @onclick="@SubmitQuestion">Kumpul Soal</button>
+
     </div>
+</div>
 
 <div class="text-center">
 
@@ -51,7 +55,7 @@
 
     void NextQuestion()
     {
-        if (viewedQuestion < answers.Length-1)
+        if (viewedQuestion < answers.Length - 1)
         {
             answers[viewedQuestion] = Jawaban;
             Jawaban = "";
@@ -71,6 +75,11 @@
             Pertanyan = questions[viewedQuestion].Soal;
             Jawaban = answers[viewedQuestion];
         }
+    }
+
+    void SubmitQuestion()
+    {
+        navManager.NavigateTo("/quizresult");
     }
 
 }

@@ -62,12 +62,23 @@ namespace Essayin.Data
 
         public bool CheckIfSoalExist(string id)
         {
-            string outstr;
-            var soals = GetSoalFromId(id,out outstr);
-            if (soals.Count > 0)
-                return true;
-            else
+            try
+            {
+                List<QuestionItemModel> result = new List<QuestionItemModel>();
+                var filter = Builders<Guru>.Filter.ElemMatch(x => x.Quizzes, a => a.QuizId == id);
+                var db = guruClient.GetDatabase("gurudb");
+                var collection = db.GetCollection<Guru>("guru");
+                var guruObj = collection.Find(filter).First();
+                if (guruObj.Quizzes.Count > 0)
+                    return true;
+                else
+                    return false;
+            }
+            catch (Exception)
+            {
+
                 return false;
+            }
         }
         #endregion
 

@@ -1,5 +1,23 @@
 ﻿@using Essayin.Data
 
+<hr/>
+
+<h4>Riwayat Kuis</h4>
+
+@if (SiswaResults.Count == 0)
+{
+    <p>Anda belum pernah mengerjakan kuis</p>
+}
+
+@foreach(var result in SiswaResults)
+{
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">@result.QuizName</h5>
+            <h6 class="card-subtitle mb-2 text-muted">Skor : @result.Score</h6>
+        </div>
+    </div>
+}
 
 
 @code {

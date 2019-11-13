@@ -1,9 +1,11 @@
 ﻿@page "/"
 @using Essayin.Areas.Identity.Data
 @using Microsoft.AspNetCore.Identity
+@using Essayin.Data
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<EssayinUser> UserManager
 @using Essayin.Pages.SharedComponents
+@inject QuizService Service
 
 <AuthorizeView>
     <NotAuthorized>
@@ -24,14 +26,14 @@
 
         @if (Roles.Equals("Guru"))
         {
-            
+            <SoalGuruList QuizList="@Quizzes"></SoalGuruList>
         }
         else if (Roles.Equals("Siswa"))
         {
-
+            <SiswaResultList SiswaResults="@Results"/>
         }
 
-    </Authorized>
+    </Authorized> 
 </AuthorizeView>
 
 @code{
@@ -39,16 +41,34 @@
     string FirstName = "";
     string FullName = "";
     string Email = "";
+    List<Essayin.Data.Quiz> Quizzes = new List<Essayin.Data.Quiz>();
+    List<Essayin.Data.SiswaResult> Results = new List<Essayin.Data.SiswaResult>();
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.Delay(1500);
+        await Task.Delay(3000);
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        var userinfo = await UserManager.GetUserAsync(user);
-        Roles = userinfo.Role;
-        FirstName = userinfo.FirstName;
-        FullName = userinfo.FirstName;
-        Email = userinfo.Email;
+        if (user.Identity.IsAuthenticated)
+        {
+            var userinfo = await UserManager.GetUserAsync(user);
+            Roles = userinfo.Role;
+            FirstName = userinfo.FirstName;
+            FullName = userinfo.FirstName;
+            Email = userinfo.Email;
+            try
+            {
+                if (Roles.Equals("Guru"))
+                Quizzes = Service.GetQuizListFromGuru(Email);
+            else if (Roles.Equals("Siswa"))
+                Results = Service.GetSiswaResults(Email);
+            }
+            catch (Exception)
+            {
+
+            }
+            
+        }
+
     }
 }
