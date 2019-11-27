@@ -1,19 +1,19 @@
 ﻿@using Essayin.Data
 
-<hr/>
+<hr />
 
-<h4>Riwayat Kuis</h4>
+<h4>Hasil Kuis</h4>
 
-@if (SiswaResults.Count == 0)
+@if (QuizResult.Count == 0)
 {
-    <p>Anda belum pernah mengerjakan kuis</p>
+    <p>Belum ada siswa yang mengerjakan kuis</p>
 }
 
-@foreach(var result in SiswaResults)
+@foreach (var result in QuizResult)
 {
     <div class="card">
         <div class="card-body">
-            <h5 class="card-title">@result.QuizName</h5>
+            <h5 class="card-title">@result.StudentName</h5>
             <h6 class="card-subtitle mb-2 text-muted">Skor : @result.Score</h6>
         </div>
     </div>
@@ -22,11 +22,11 @@
 
 @code {
     [Parameter]
-    public List<SiswaResult> SiswaResults { get; set; }
+    public List<QuizResults> QuizResult { get; set; }
 
     protected override void OnInitialized()
     {
-        
+
     }
 
 }

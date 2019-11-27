@@ -1,4 +1,7 @@
 ﻿@using Essayin.Data
+@inject Sotsera.Blazor.Toaster.IToaster Toaster
+@inject NavigationManager navManager
+@inject QuizService Services
 
 <hr />
 <h4>Daftar Kuis</h4>
@@ -15,8 +18,8 @@
             <h5 class="card-title">@result.QuizName</h5>
             <h6 class="card-subtitle mb-2 text-muted">Kode Soal : @result.QuizId</h6>
             <h6 class="card-subtitle mb-2 text-muted">Total Peserta : @result.QuizResults.Count</h6>
-            <button class="btn btn-primary">Sunting</button>
-            <button class="btn btn-danger">Hapus</button>
+            <button class="btn btn-primary" @onclick="@(()=>SeeResult(result.QuizId))">Lihat Hasil Siswa</button>
+            <button class="btn btn-danger" @onclick="@(()=>DeleteQuiz(result,result.QuizId))">Hapus</button>
         </div>
     </div>
 }
@@ -26,4 +29,14 @@
     [Parameter]
     public List<Quiz> QuizList { get; set; }
 
+    private void SeeResult(string id)
+    {
+        navManager.NavigateTo($"/quizresult/{id}");
+    }
+
+    private void DeleteQuiz(Quiz quiz,string id)
+    {
+        QuizList.Remove(quiz);
+        Services.DeleteSoal(id);
+    }
 }

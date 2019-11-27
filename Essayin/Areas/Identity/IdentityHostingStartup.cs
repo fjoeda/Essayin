@@ -20,9 +20,16 @@ namespace Essayin.Areas.Identity
                     options.UseSqlServer(
                         context.Configuration.GetConnectionString("EssayinUserContextConnection")));
 
-                services.AddDefaultIdentity<EssayinUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                services.AddDefaultIdentity<EssayinUser>(options => options.SignIn.RequireConfirmedAccount = false)
                     .AddEntityFrameworkStores<EssayinUserContext>();
+
+                services.Configure<EssayinUserContext>(o =>
+                {
+                    o.Database.Migrate();
+                    
+                });
             });
+
         }
     }
 }

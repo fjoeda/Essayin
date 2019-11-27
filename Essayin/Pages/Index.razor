@@ -15,8 +15,8 @@
             <hr class="my-4">
 
             <p class="lead">
-                <a class="btn btn-primary btn-lg" href="#" role="button">Daftar</a>
-                <a class="btn btn-primary btn-lg" href="#" role="button">Masuk</a>
+                <a class="btn btn-primary btn-lg" href="Identity/Account/Register" role="button">Daftar</a>
+                <a class="btn btn-primary btn-lg" href="Identity/Account/Login" role="button">Masuk</a>
             </p>
         </div>
     </NotAuthorized>
@@ -54,7 +54,7 @@
             var userinfo = await UserManager.GetUserAsync(user);
             Roles = userinfo.Role;
             FirstName = userinfo.FirstName;
-            FullName = userinfo.FirstName;
+            FullName = userinfo.FirstName+" "+userinfo.LastName;
             Email = userinfo.Email;
             try
             {

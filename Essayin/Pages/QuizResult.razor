@@ -7,13 +7,25 @@
 <div class="card">
     <div class="card-body text-center">
         <h3>Nilai anda</h3>
-        <h1>100</h1>
-        <p>Anda berhasil menjawab benar sebanyak 10 dari 10 pertanyaan</p>
+        <h1>@Score</h1>
+        <p>Anda berhasil menjawab benar sebanyak @JawabanBenar jawaban benar, @JawabanSetengahBenar jawaban setengah benar, dari @TotalPertanyaan pertanyaan</p>
         <button class="btn btn-primary" type="button" @onclick="@BackToHome">Kembali</button>
     </div>
 </div>
 
 @code {
+    [Parameter]
+    public double Score { get; set; }
+
+    [Parameter]
+    public int TotalPertanyaan { get; set; }
+    
+    [Parameter]
+    public int JawabanSetengahBenar { get; set; }
+
+    [Parameter]
+    public int JawabanBenar { get; set; }
+
     void BackToHome()
     {
         navManager.NavigateTo("/");

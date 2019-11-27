@@ -1,6 +1,8 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
+using Newtonsoft.Json;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,26 +40,42 @@ namespace Essayin.Data
         #region Check if something exist
         public bool CheckIfGuruExist(string email)
         {
-            var filter = Builders<BsonDocument>.Filter.Eq("Email", email);
-            var db = guruClient.GetDatabase("gurudb");
-            var collection = db.GetCollection<BsonDocument>("guru");
-            var count = collection.Find(filter).CountDocuments();
-            if (count > 0)
-                return true;
-            else
+            try
+            {
+                var filter = Builders<BsonDocument>.Filter.Eq("Email", email);
+                var db = guruClient.GetDatabase("gurudb");
+                var collection = db.GetCollection<BsonDocument>("guru");
+                var count = collection.Find(filter).CountDocuments();
+                if (count > 0)
+                    return true;
+                else
+                    return false;
+            }catch(Exception e)
+            {
                 return false;
+            }
+            
         }
 
         public bool CheckIfSiswaExist(string email)
         {
-            var filter = Builders<BsonDocument>.Filter.Eq("Email", email);
-            var db = muridClient.GetDatabase("muriddb");
-            var collection = db.GetCollection<BsonDocument>("siswa");
-            var count = collection.Find(filter).CountDocuments();
-            if (count > 0)
-                return true;
-            else
+            try
+            {
+                var filter = Builders<BsonDocument>.Filter.Eq("Email", email);
+                var db = muridClient.GetDatabase("muriddb");
+                var collection = db.GetCollection<BsonDocument>("siswa");
+                var count = collection.Find(filter).CountDocuments();
+                if (count > 0)
+                    return true;
+                else
+                    return false;
+            }
+            catch (Exception)
+            {
+
                 return false;
+            }
+           
         }
 
         public bool CheckIfSoalExist(string id)
@@ -92,21 +110,58 @@ namespace Essayin.Data
             collection.UpdateOne(filter, update);
         }
 
-        public void AddResultList(string email, SiswaResult result)
+        public void AddResultList(string email, List<SiswaResult> results)
         {
             var filter = Builders<BsonDocument>.Filter.Eq("Email", email);
             var db = muridClient.GetDatabase("muriddb");
             var collection = db.GetCollection<BsonDocument>("siswa");
-            var siswaObj = BsonSerializer.Deserialize<Siswa>(collection.Find(filter).First());
-            var currentResults = siswaObj.Results;
-            currentResults.Add(result);
-            var update = Builders<BsonDocument>.Update.Set("Results", currentResults);
+            var update = Builders<BsonDocument>.Update.Set("Results", results);
+            collection.UpdateOne(filter, update);
+        }
+
+        public void AddResultToQuiz(string id, QuizResults result)
+        {
+            var filter = Builders<Guru>.Filter.ElemMatch(x => x.Quizzes, a => a.QuizId == id);
+            var db = guruClient.GetDatabase("gurudb");
+            var collection = db.GetCollection<Guru>("guru");
+            var guruObj = collection.Find(filter).First();
+            foreach (var item in guruObj.Quizzes)
+            {
+                if (item.QuizId.Equals(id))
+                {
+                    guruObj.Quizzes[guruObj.Quizzes.IndexOf(item)].QuizResults.Add(result); 
+                    break;
+                }
+            }
+            
+            var update = Builders<Guru>.Update.Set("Quizzes", guruObj.Quizzes);
             collection.UpdateOne(filter, update);
         }
 
         #endregion
 
         #region Get Data
+
+        
+
+        public List<QuestionItemModel> GetSoalFromId(string id)
+        {
+            List<QuestionItemModel> result = new List<QuestionItemModel>();
+            var filter = Builders<Guru>.Filter.ElemMatch(x => x.Quizzes, a => a.QuizId == id);
+            var db = guruClient.GetDatabase("gurudb");
+            var collection = db.GetCollection<Guru>("guru");
+            var guruObj = collection.Find(filter).First();
+            foreach (var item in guruObj.Quizzes)
+            {
+                if (item.QuizId.Equals(id))
+                {
+                    result = item.QuizItems.ToList();
+                    break;
+                }
+            }
+            return result;
+        }
+
         public List<QuestionItemModel> GetSoalFromId(string id, out string namakuis)
         {
             namakuis = "";
@@ -164,6 +219,29 @@ namespace Essayin.Data
         }
         #endregion
 
+        #region Delete
+
+        public void DeleteSoal(string id)
+        {
+            var filter = Builders<Guru>.Filter.ElemMatch(x => x.Quizzes, a => a.QuizId == id);
+            var db = guruClient.GetDatabase("gurudb");
+            var collection = db.GetCollection<Guru>("guru");
+            var guruObj = collection.Find(filter).First();
+            foreach (var item in guruObj.Quizzes)
+            {
+                if (item.QuizId.Equals(id))
+                {
+                    guruObj.Quizzes.Remove(item);
+                    break;
+                }
+            }
+
+            var update = Builders<Guru>.Update.Set("Quizzes", guruObj.Quizzes);
+            collection.UpdateOne(filter, update);
+        }
+
+        #endregion
+
         #region Other Function
         public string GenerateQuizCode()
         {
@@ -171,6 +249,49 @@ namespace Essayin.Data
             return rnd.Next(100000, 999999).ToString();
         }
         #endregion
+
+        #region koreksi Skorin
+        public SkorinResult KoreksiWithSkorin(List<string> JawabanBenar, List<string> JawabanSiswa)
+        {
+            var body = new SkorinBody { JawabanBenar = JawabanBenar, JawabanSiswa = JawabanSiswa };
+            string url = "http://skorin.herokuapp.com/koreksi-satu/";
+            var client = new RestClient();
+            var request = new RestRequest(url, Method.POST, DataFormat.Json);
+            request.AddHeader("Content-Type", "application/json");
+            request.AddJsonBody(JsonConvert.SerializeObject(body));
+            var response = client.Execute(request);
+            var skorinObj = JsonConvert.DeserializeObject<SkorinResult>(response.Content);
+            return skorinObj;
+        }
+        #endregion
+    }
+    class SkorinBody
+    {
+        [JsonProperty(PropertyName = "jawaban_benar")]
+        public IList<string> JawabanBenar { get; set; }
+        [JsonProperty(PropertyName = "jawaban_siswa")]
+        public IList<string> JawabanSiswa { get; set; }
+    }
+
+    public class SkorinResult
+    {
+        [JsonProperty(PropertyName = "final_score")]
+        public double Score { get; set; } = 0;
+
+        [JsonProperty(PropertyName = "total_jawaban_benar")]
+        public int TotalJawabanBenar { get; set; } = 0;
+
+        [JsonProperty(PropertyName = "total_jawaban_salah")]
+        public int TotalJawabanSalah { get; set; } = 0;
+
+        [JsonProperty(PropertyName = "total_jawaban_setengah_benar")]
+        public int TotalJawabanSetengahBenar { get; set; } = 0;
+
+        public int TotalPertanyaan { get
+            {
+                return TotalJawabanBenar + TotalJawabanSalah + TotalJawabanSetengahBenar;
+            } 
+        }
     }
 
     public class DocumentBuilder
@@ -190,6 +311,7 @@ namespace Essayin.Data
         {
             Guru user = new Guru
             {
+                Id = ObjectId.GenerateNewId(),
                 Email = email,
                 Nama = name
             };
@@ -200,6 +322,7 @@ namespace Essayin.Data
         {
             Siswa user = new Siswa
             {
+                Id = ObjectId.GenerateNewId(),
                 Email = email,
                 Nama = name
             };

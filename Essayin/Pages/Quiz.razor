@@ -3,29 +3,49 @@
 @using Essayin.Data
 @inject QuizService Services
 @inject NavigationManager navManager
-
+@using Essayin.Areas.Identity.Data
+@using Microsoft.AspNetCore.Identity
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<EssayinUser> UserManager
 
 <div class="text-center">
     <h1>@KuisName</h1>
     <hr />
 
 </div>
-<div class="card">
-    <div class="card-body text-center">
-        <Question Nomor="@(viewedQuestion+1)" Pertanyaan="@Pertanyan"></Question>
-        <div class="input-group mb-3">
-            <div class="input-group-prepend" id="button-addon3">
-                <button class="btn btn-outline-secondary" type="button" @onclick="@PrevQuestion">Sebelumnya</button>
+@if (quizState == QuizState.DoingQuiz)
+{
+    <div class="card">
+        <div class="card-body text-center">
+            <Question Nomor="@(viewedQuestion+1)" Pertanyaan="@Pertanyan" TotalPertanyaan="@questions.Count"></Question>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend" id="button-addon3">
+                    <button class="btn btn-outline-secondary" type="button" @onclick="@PrevQuestion">Sebelumnya</button>
+                </div>
+                <input class="form-control" placeholder="Jawaban" @bind="Jawaban" />
+                <div class="input-group-prepend" id="button-addon3">
+                    <button class="btn btn-outline-secondary" type="button" @onclick="@NextQuestion">Selanjutnya</button>
+                </div>
             </div>
-            <input class="form-control" placeholder="Jawaban" @bind="Jawaban" />
-            <div class="input-group-prepend" id="button-addon3">
-                <button class="btn btn-outline-secondary" type="button" @onclick="@NextQuestion">Selanjutnya</button>
-            </div>
-        </div>
-        <button class="btn btn-primary" type="button" @onclick="@SubmitQuestion">Kumpul Soal</button>
+            <button class="btn btn-primary" type="button" @onclick="@SubmitQuestion">Kumpul Soal</button>
 
+        </div>
     </div>
-</div>
+}
+else if (quizState == QuizState.CheckingAnswer)
+{
+    <div class="text-center">
+        <div class="spinner-grow" role="status">
+            <span class="sr-only">Mengoreksi jawaban, mohon tunggu :)</span>
+        </div>
+    </div>
+}
+else if (quizState == QuizState.ResultShow)
+{
+    <QuizResult Score="@result.Score" JawabanBenar="@result.TotalJawabanBenar" JawabanSetengahBenar="@result.TotalJawabanSetengahBenar"
+                TotalPertanyaan="@result.TotalPertanyaan" />
+}
+
 
 <div class="text-center">
 
@@ -38,11 +58,18 @@
     List<QuestionItemModel> questions;
     string[] answers;
 
-    //viewed text
+    //viewed quiz text
     string KuisName = "Nama Kuis";
     string Pertanyan = "";
     string Jawaban = "";
     int viewedQuestion = 0;
+
+    //viewed quiz result
+    SkorinResult result = new SkorinResult();
+
+
+    //state
+    QuizState quizState = QuizState.DoingQuiz;
 
 
     protected override void OnInitialized()
@@ -51,6 +78,10 @@
         questions = Services.GetSoalFromId(QuizCode, out KuisName);
         answers = new string[questions.Count];
         Pertanyan = questions[viewedQuestion].Soal;
+        for (int i = 0; i < questions.Count; i++)
+        {
+            answers[i] = " ";
+        }
     }
 
     void NextQuestion()
@@ -77,9 +108,51 @@
         }
     }
 
+    
+
     void SubmitQuestion()
     {
-        navManager.NavigateTo("/quizresult");
+        var authState = AuthenticationStateProvider.GetAuthenticationStateAsync().Result;
+        var user = authState.User;
+        var userinfo = UserManager.GetUserAsync(user).Result;
+        answers[viewedQuestion] = Jawaban;
+        quizState = QuizState.CheckingAnswer;
+        List<string> jawabanBenar = new List<string>();
+        foreach (var item in questions)
+        {
+            jawabanBenar.Add(item.Jawaban);
+        }
+        result = Services.KoreksiWithSkorin(jawabanBenar, answers.ToList());
+        quizState = QuizState.ResultShow;
+
+        if (!Services.CheckIfSiswaExist(userinfo.Email))
+            Services.CreateNewStudentUser(userinfo.Email, userinfo.FirstName + " " + userinfo.LastName);
+
+        var quizResult = new QuizResults
+        {
+            CorrectAnswer = result.TotalJawabanBenar,
+            QuestionItemTotal = result.TotalPertanyaan,
+            Score = result.Score,
+            StudentName = userinfo.FirstName+" "+userinfo.LastName
+        };
+
+        var siswaResult = new SiswaResult
+        {
+            CorrectAnswer = result.TotalJawabanBenar,
+            QuestionItemTotal = result.TotalPertanyaan,
+            Score = result.Score,
+            QuizId = QuizCode,
+            QuizName = KuisName
+        };
+
+        var currentList = Services.GetSiswaResults(userinfo.Email);
+        currentList.Add(siswaResult);
+        Services.AddResultList(userinfo.Email, currentList);
+
+
+        
+        Services.AddResultToQuiz(QuizCode, quizResult);
+
     }
 
 }

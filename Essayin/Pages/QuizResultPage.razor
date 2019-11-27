@@ -1,0 +1,40 @@
+﻿@page "/quizresult/{quizcode}"
+@attribute [Authorize]
+@using Essayin.Data
+@using Essayin.Pages.SharedComponents
+@inject QuizService Services
+@inject NavigationManager navManager
+
+<div class="card">
+    <div class="card-body">
+        <h2>@QuizName</h2>
+        <div>
+            <span class="oi oi-info" aria-hidden="true"></span> @QuizCode
+        </div>
+        <div>
+            <span class="oi oi-person" aria-hidden="true"></span> @totalkerjaansiswa telah siswa mengerjakan
+        </div>
+    </div>
+</div>
+
+<QuizResultList QuizResult="results"/>
+
+@code {
+    [Parameter]
+    public string QuizCode { get; set; }
+
+    string QuizName  = "";
+    int totalkerjaansiswa = 0;
+
+    List<QuizResults> results = new List<QuizResults>();
+
+    protected override void OnInitialized()
+    {
+        var quiz = Services.GetSoalFromId(QuizCode, out QuizName);
+        results = Services.GetQuizResultsFromId(QuizCode);
+        totalkerjaansiswa = results.Count;
+    }
+
+    
+
+}

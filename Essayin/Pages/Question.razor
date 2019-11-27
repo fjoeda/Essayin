@@ -1,5 +1,5 @@
 ﻿
-<h5 class="card-title">Pertanyaan @Nomor</h5>
+<h5 class="card-title">Pertanyaan @Nomor dari @TotalPertanyaan</h5>
 <p class="card-text">@Pertanyaan</p>
 
 @code {
@@ -8,5 +8,8 @@
 
     [Parameter]
     public string Pertanyaan { get; set; }
+
+    [Parameter]
+    public int TotalPertanyaan { get; set; }
 
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -45,7 +47,8 @@ namespace Essayin.Data
 
     public class Guru
     {
-        public object Id { get; set; }
+        [BsonId]
+        public ObjectId Id { get; set; } 
         public string Nama { get; set; }
         public string Email { get; set;}
         public IList<Quiz> Quizzes { get; set; } = new List<Quiz>();
@@ -53,9 +56,12 @@ namespace Essayin.Data
 
     public class Siswa
     {
-        public object Id { get; set; }
+        [BsonId]
+        public ObjectId Id { get; set; }
         public string Nama { get; set; }
         public string Email { get; set; }
         public IList<SiswaResult> Results { get; set; } = new List<SiswaResult>();
     }
+
+    public enum QuizState { DoingQuiz, CheckingAnswer, ResultShow}
 }
